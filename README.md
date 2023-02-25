@@ -1,5 +1,5 @@
 # classify_nodulation
-Training a neural network to classify short (300 bp) sequences that influence nodulation
+Training a neural network to classify short (300 bp) sequences that influence nodulation in leguminous plants
 
 ## Current Program
 - [x] Reads fastq file sequences, label them, and append them to a master list
