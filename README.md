@@ -13,6 +13,6 @@ Training a neural network to classify short (300 bp) sequences that influence no
 - *Medicago Truncatula* RNA-seq data has been pulled from [NCBI's Sequence Read Archive](https://www.ncbi.nlm.nih.gov/sra)
 - Gene sequences that have been experimentally validated to influence nodulation were supplied from [this review of nitrogen-fixation research](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6961631/)
 
-### Output
+### Output - (80% train | 20% test split)
 
-![image](https://user-images.githubusercontent.com/88045526/221385648-414c5f02-902a-4898-b098-2623c70bd3c0.png)
+![image](https://user-images.githubusercontent.com/88045526/221386665-e7233c35-d641-415e-afca-369cdaba16fc.png)
