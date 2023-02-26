@@ -15,4 +15,4 @@ Training a neural network to classify short (300 bp) sequences that influence no
 
 ### Output
 
-![image](https://user-images.githubusercontent.com/88045526/221369533-65eeb038-8ae5-4e47-8073-fa699c8964fd.png)
+![image](https://user-images.githubusercontent.com/88045526/221385648-414c5f02-902a-4898-b098-2623c70bd3c0.png)
