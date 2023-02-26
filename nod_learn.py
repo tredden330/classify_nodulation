@@ -66,6 +66,11 @@ def train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_ep
         #clear out the gradients from the last step loss.backward()
         optimizer.zero_grad()
 
+        #shuffle training data each epoch
+        indices = torch.randperm(X_train.size()[0])
+        X_train = X_train[indices]
+        y_train = y_train[indices]
+
         #forward feed
         output_train = model(X_train)
 
