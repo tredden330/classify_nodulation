@@ -2,8 +2,8 @@
 Training a neural network to classify short (300 bp) sequences that influence nodulation in leguminous plants
 
 ## Current Program
-- [x] Reads fastq file sequences, label them, and append them to a master list
-- [x] Encode all sequences of the master list into floats
+- [x] Reads fastq file sequences, label them, and append them to a list
+- [x] Encode all sequences of the list into floats
 - [x] Separate data into test/training sets
 - [x] Create a neural network architecture that can learn from the data
 - [ ] Graph testing results
