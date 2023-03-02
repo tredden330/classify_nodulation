@@ -7,23 +7,27 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import time
 import ast
+import statistics
 
 class NeuralNetworkClassificationModel(nn.Module):
 
     def __init__(self,input_dim,output_dim):
+
         super(NeuralNetworkClassificationModel,self).__init__()
-        self.input_layer    = nn.Linear(input_dim,9000)
-        self.hidden_layer1  = nn.Linear(9000,250)
-        self.hidden_layer2  = nn.Linear(250, 25)
-        self.output_layer   = nn.Linear(25,output_dim)
-        self.relu = nn.ReLU()
+        
+        #define network structure
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(input_dim, 500),
+            nn.ReLU(),
+            nn.Linear(500,20),
+            nn.ReLU(),
+            nn.Linear(20,output_dim),
+         )
 
     def forward(self,x):
-        out =  self.relu(self.input_layer(x))
-        out =  self.relu(self.hidden_layer1(out))
-        out =  self.relu(self.hidden_layer2(out))
-        out =  self.output_layer(out)
-        return out
+
+        logits = self.linear_relu_stack(x)
+        return logits
 
 #track program runtime
 start_time = time.time()
@@ -31,7 +35,7 @@ start_time = time.time()
 #run on cpu/gpu(cuda)
 device = 'cuda'
 
-df1 = pd.read_csv('data/genes_with_float.csv', on_bad_lines='skip')
+df1 = pd.read_csv('data/genes_with_float_million.csv', on_bad_lines='skip', nrows=1000000)
 
 #extract x and y
 X = df1['float_seq']
@@ -44,6 +48,7 @@ for seq in X:
     res = ast.literal_eval(seq)
     float_X.append(res)
 
+#split data
 X_train, X_test, y_train, y_test = train_test_split(float_X, y, test_size=0.2)
 
 #turn into pytorch tensors
@@ -61,25 +66,27 @@ model = NeuralNetworkClassificationModel(input_dim,output_dim).to(device)
 learning_rate = 0.001
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate)
-num_epochs = 10
+num_epochs = 100
 
 #split dataset into batches
-batch_size = 50000
+batch_size = 1000000
 batches_X_train = torch.split(X_train, batch_size)
 batches_y_train = torch.split(y_train, batch_size)
 batches_X_test = torch.split(X_test, batch_size)
 batches_y_test = torch.split(y_test, batch_size)
 
-
-
 def train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_epochs):
+
+    all_train_losses = []
+    all_percent_correct = []
 
     for epoch in range(num_epochs):
 
         epoch_percent_correct = []
-        train_losses = []
+        epoch_train_losses = []
 
-        for batch_num in range(5):
+        #train model in batches
+        for batch_num in range(len(batches_X_train)):
 
             #clear out the gradients from the last step loss.backward()
             optimizer.zero_grad()
@@ -94,13 +101,16 @@ def train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_ep
 
             #calculate the loss and record it for the batch
             loss_train = criterion(output_train, shuffled_y_train)
-            train_losses.append(loss_train.item())
+            epoch_train_losses.append(loss_train.item())
 
             #backward propagation: calculate gradients
             loss_train.backward()
 
             #update the weights
             optimizer.step()
+
+        #test model in batches
+        for batch_num in range(len(batches_X_test)):
 
             #calculate and validate predictions on test set for this batch
             test_predictions = model(batches_X_test[batch_num])
@@ -112,15 +122,22 @@ def train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_ep
                     correct += 1
                 else:
                     incorrect += 1
-                    count += 1
-            epoch_percent_correct.append((correct/(correct+incorrect))*100)
+            percent_correct = (correct/(correct+incorrect))*100
+            epoch_percent_correct.append(percent_correct)
 
         #print information for current epoch
-        if (epoch + 1) % 1 == 0:
+        if (epoch+1) % 10 == 0:
             print(f"Epoch {epoch+1}/{num_epochs}")
-            print("\t Percentage correct: ", epoch_percent_correct)
-            print("\t Training Error: ", train_losses)
+            print("\t Training Error: ", statistics.mean(epoch_train_losses))
+            print("\t Percentage correct: ", statistics.mean(epoch_percent_correct))
 
-train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_epochs)
+    return all_train_losses, all_percent_correct
+
+def graph_results():
+
+    print("graphing")
+
+results = train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_epochs)
+print(results)
 
 print("finished in ", time.time() - start_time, " seconds")
