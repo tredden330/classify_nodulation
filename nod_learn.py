@@ -14,20 +14,24 @@ class NeuralNetworkClassificationModel(nn.Module):
     def __init__(self,input_dim,output_dim):
 
         super(NeuralNetworkClassificationModel,self).__init__()
+
+        #define shape of network
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(input_dim, 3),
             nn.ReLU(),
-            nn.Linear(3,3),
+            nn.Linear(3,2),
 #            nn.ReLU(),
 #            nn.Linear(50,20),
             nn.ReLU(),
-            nn.Linear(3,output_dim),
+            nn.Linear(2,output_dim),
          )
 
     def forward(self,x):
 
         logits = self.linear_relu_stack(x)
         return logits
+
+
 
 #track program runtime
 start_time = time.time()
@@ -66,7 +70,7 @@ model = NeuralNetworkClassificationModel(input_dim,output_dim).to(device)
 learning_rate = 0.001
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate)
-num_epochs = 100
+num_epochs = 200
 
 #split dataset into batches
 batch_size = 10000
@@ -76,10 +80,6 @@ batches_X_test = torch.split(X_test, batch_size)
 batches_y_test = torch.split(y_test, batch_size)
 
 
-print(len(batches_X_train))
-print(len(batches_X_test))
-print(len(batches_y_train))
-print(len(batches_y_test))
 
 def train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_epochs):
 
@@ -131,10 +131,12 @@ def train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_ep
             correct = 0
             incorrect = 0
             for prediction in test_predictions:
-                if np.argmax(prediction.detach().cpu().numpy()) == y_test[count].cpu().numpy():
+                if np.argmax(prediction.detach().cpu().numpy()) == batches_y_test[batch_num][count].cpu().numpy():
                     correct += 1
                 else:
                     incorrect += 1
+                count += 1
+
             percent_correct = (correct/(correct+incorrect))*100
             epoch_percent_correct.append(percent_correct)
 
@@ -154,6 +156,7 @@ def graph(results):
 
     x = range(num_epochs)
 
+    #graph errors over epochs
     fig, ax = plt.subplots()
     ax.plot(x, results[0], label="training error")
     ax.plot(x, results[1], label="testing error")
@@ -163,6 +166,7 @@ def graph(results):
     plt.legend()
     fig.savefig("errors.png")
 
+    #graph correct testing guesses over epochs
     fig, ax = plt.subplots()
     ax.plot(x, results[2], label="correct guess fraction")
     plt.title("Computer Guesses on Unseen Data")
