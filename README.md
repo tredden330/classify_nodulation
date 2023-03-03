@@ -6,7 +6,7 @@ Training a neural network to classify short (300 bp) sequences that influence no
 - [x] Encode all sequences of the list into floats
 - [x] Separate data into test/training sets
 - [x] Create a neural network architecture that can learn from the data
-- [ ] Graph testing results
+- [x] Graph testing results
 - [ ] Optimize hyperparameters for optimum network
 
 ### The Data

@@ -14,14 +14,14 @@ class NeuralNetworkClassificationModel(nn.Module):
     def __init__(self,input_dim,output_dim):
 
         super(NeuralNetworkClassificationModel,self).__init__()
-        
-        #define network structure
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(input_dim, 500),
+            nn.Linear(input_dim, 3),
             nn.ReLU(),
-            nn.Linear(500,20),
+            nn.Linear(3,3),
+#            nn.ReLU(),
+#            nn.Linear(50,20),
             nn.ReLU(),
-            nn.Linear(20,output_dim),
+            nn.Linear(3,output_dim),
          )
 
     def forward(self,x):
@@ -35,7 +35,7 @@ start_time = time.time()
 #run on cpu/gpu(cuda)
 device = 'cuda'
 
-df1 = pd.read_csv('data/genes_with_float_million.csv', on_bad_lines='skip', nrows=1000000)
+df1 = pd.read_csv('data/genes_with_float_million.csv', on_bad_lines='skip', nrows=20000)
 
 #extract x and y
 X = df1['float_seq']
@@ -49,7 +49,7 @@ for seq in X:
     float_X.append(res)
 
 #split data
-X_train, X_test, y_train, y_test = train_test_split(float_X, y, test_size=0.2)
+X_train, X_test, y_train, y_test = train_test_split(float_X, y, test_size=0.3)
 
 #turn into pytorch tensors
 X_train = torch.FloatTensor(X_train).to(device)
@@ -69,21 +69,29 @@ optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate)
 num_epochs = 100
 
 #split dataset into batches
-batch_size = 1000000
+batch_size = 10000
 batches_X_train = torch.split(X_train, batch_size)
 batches_y_train = torch.split(y_train, batch_size)
 batches_X_test = torch.split(X_test, batch_size)
 batches_y_test = torch.split(y_test, batch_size)
 
+
+print(len(batches_X_train))
+print(len(batches_X_test))
+print(len(batches_y_train))
+print(len(batches_y_test))
+
 def train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_epochs):
 
     all_train_losses = []
+    all_test_losses = []
     all_percent_correct = []
 
     for epoch in range(num_epochs):
 
         epoch_percent_correct = []
         epoch_train_losses = []
+        epoch_test_losses = []
 
         #train model in batches
         for batch_num in range(len(batches_X_train)):
@@ -114,6 +122,11 @@ def train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_ep
 
             #calculate and validate predictions on test set for this batch
             test_predictions = model(batches_X_test[batch_num])
+
+            #calculate the loss and record it for the batch
+            loss_test = criterion(test_predictions, batches_y_test[batch_num])
+            epoch_test_losses.append(loss_test.item())
+
             count = 0
             correct = 0
             incorrect = 0
@@ -129,15 +142,39 @@ def train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_ep
         if (epoch+1) % 10 == 0:
             print(f"Epoch {epoch+1}/{num_epochs}")
             print("\t Training Error: ", statistics.mean(epoch_train_losses))
+            print("\t Testing Error: ", statistics.mean(epoch_test_losses))
             print("\t Percentage correct: ", statistics.mean(epoch_percent_correct))
 
-    return all_train_losses, all_percent_correct
+        all_train_losses.append(statistics.mean(epoch_train_losses))
+        all_test_losses.append(statistics.mean(epoch_test_losses))
+        all_percent_correct.append(statistics.mean(epoch_percent_correct))
+    return all_train_losses, all_test_losses, all_percent_correct
 
-def graph_results():
+def graph(results):
 
-    print("graphing")
+    x = range(num_epochs)
+
+    fig, ax = plt.subplots()
+    ax.plot(x, results[0], label="training error")
+    ax.plot(x, results[1], label="testing error")
+    plt.title("Average Error")
+    plt.xlabel("training iteration")
+    ax.grid()
+    plt.legend()
+    fig.savefig("errors.png")
+
+    fig, ax = plt.subplots()
+    ax.plot(x, results[2], label="correct guess fraction")
+    plt.title("Computer Guesses on Unseen Data")
+    plt.xlabel("training iteration")
+    plt.ylabel("percent")
+    ax.grid()
+    plt.legend()
+    fig.savefig("percent_correct.png")
+
+
 
 results = train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_epochs)
-print(results)
+graph(results)
 
 print("finished in ", time.time() - start_time, " seconds")
