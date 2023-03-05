@@ -5,7 +5,7 @@ Currently utilizing neural networks and k-nearest-neighbor approaches
 
 ## Current Program
 - [x] Reads fastq file sequences, label them, and append them to a list
-- [x] Encode all sequences of the list into floats
+- [x] Encode sequences with floats or one-hot
 - [x] Separate data into test/training sets
 - [x] Create a neural network test-train code
 - [x] Create Knn train-test code
