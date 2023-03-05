@@ -1,5 +1,7 @@
 # classify_nodulation
-Training a computer to classify short (300 bp) sequences that influence nodulation in leguminous plants. Currently utilizing neural networks and k-nearest-neighbor approaches
+Training a computer to classify short (300 bp) sequences that influence nodulation in leguminous plants. 
+
+Currently utilizing neural networks and k-nearest-neighbor approaches
 
 ## Current Program
 - [x] Reads fastq file sequences, label them, and append them to a list
