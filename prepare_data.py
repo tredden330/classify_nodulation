@@ -8,10 +8,14 @@ def assemble_data(num_samples):    #add raw fastq sequences into the nodulation 
     #write and label bulk rna-seq data into dataframe
     bulk_sequences = []
     with open("data/SRR23387605.fastq") as handle:
-
+        count = 0
         for record in SeqIO.parse(handle, "fastq"):
             bulk_sequences.append(str(record.seq))
+            if (count > num_samples):
+                break
+            count += 1
 
+        print(len(bulk_sequences))
         small_bulk_sequences = random.choices(bulk_sequences, k=num_samples)
         print("bulk sequences num = ", len(small_bulk_sequences))
 
@@ -40,7 +44,7 @@ def assemble_data(num_samples):    #add raw fastq sequences into the nodulation 
     df.to_csv("data/genes.csv",index=False)
 
 
-def encode_sequences():    #to input into neural network, sequences must be encoded as floats
+def float_encode_sequences():    #to input into neural network, sequences must be encoded as floats
 
     csv = pd.read_csv("data/genes.csv")
 
@@ -66,9 +70,33 @@ def encode_sequences():    #to input into neural network, sequences must be enco
         float_sequences.append(float_seq)
 
     csv['float_seq'] = float_sequences
+    csv = csv.sample(frac=1)
+    csv.to_csv("data/genes_with_float_million.csv", index=False)
 
-    csv.to_csv("data/genes_with_float.csv", index=False)
+def onehot_encode_sequences():
 
+    csv = pd.read_csv("data/genes.csv")
+    onehot_sequences = []
+    for gene_seq in csv['genes']:
+        onehot_sequences.append(onehote(gene_seq))
+    onehot_sequences = np.array(onehot_sequences)
+    onehot_sequences = onehot_sequences.reshape(len(onehot_sequences), 1200)
+    print(onehot_sequences)
+    print(onehot_sequences[:,0])
+    
+    for num in range(400):
+        csv[num] = onehot_sequences[:,num]
+    
+    #csv = csv.sample(frac=1)
+    csv.to_csv("data/genes_with_onehot.csv", index=False)
 
-assemble_data(1000)
-encode_sequences()
+def onehote(seq):
+    seq2=list()
+    mapping = {"A":[1., 0., 0., 0.], "C": [0., 1., 0., 0.], "G": [0., 0., 1., 0.], "T":[0., 0., 0., 1.]}
+    for i in seq:
+      seq2.append(mapping[i]  if i in mapping.keys() else [0., 0., 0., 0.]) 
+    return np.array(seq2)
+
+assemble_data(900)
+onehot_encode_sequences()
+#float_encode_sequences()
