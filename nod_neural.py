@@ -17,13 +17,13 @@ class NeuralNetworkClassificationModel(nn.Module):
 
         #define shape of network
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(input_dim, 3),
+            nn.Linear(input_dim, 20),
             nn.ReLU(),
-            nn.Linear(3,2),
-#            nn.ReLU(),
-#            nn.Linear(50,20),
+            nn.Linear(20,10),
             nn.ReLU(),
-            nn.Linear(2,output_dim),
+            nn.Linear(10,5),
+            nn.ReLU(),
+            nn.Linear(5,output_dim),
          )
 
     def forward(self,x):
@@ -37,23 +37,35 @@ class NeuralNetworkClassificationModel(nn.Module):
 start_time = time.time()
 
 #run on cpu/gpu(cuda)
-device = 'cuda'
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-df1 = pd.read_csv('data/genes_with_float_million.csv', on_bad_lines='skip', nrows=20000)
+#choose between encoding schemes
+isOneHotEncoded = True
+isFloatEncoded = False
 
-#extract x and y
-X = df1['float_seq']
-y = df1['nod_relation'].astype(int).values
+if (isOneHotEncoded):
+    df1 = pd.read_csv('data/genes_with_onehot.csv', on_bad_lines='skip', nrows=100000)
+#    df1 = df1.sample(frac=.01)
+    keys = map(str, range(1200))
+    X = df1[keys].values
+    y = df1['nod_relation'].astype(int).values
 
-#convert pandas series to float array
-X = X.tolist()
-float_X = []
-for seq in X:
-    res = ast.literal_eval(seq)
-    float_X.append(res)
+if (isFloatEncoded):
+    df1 = pd.read_csv('data/genes_with_float_million.csv', on_bad_lines='skip', nrows=200000)
+    #extract x and y
+    X = df1['float_seq']
+    y = df1['nod_relation'].astype(int).values
 
+    #convert pandas series to float array
+    X = X.tolist()
+    float_X = []
+    for seq in X:
+        res = ast.literal_eval(seq)
+        float_X.append(res)
+    X = float_X
+    
 #split data
-X_train, X_test, y_train, y_test = train_test_split(float_X, y, test_size=0.3)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
 #turn into pytorch tensors
 X_train = torch.FloatTensor(X_train).to(device)
@@ -62,7 +74,7 @@ y_train = torch.LongTensor(y_train).to(device)
 y_test = torch.LongTensor(y_test).to(device)
 
 #initialize network
-input_dim  = 300
+input_dim  = 1200
 output_dim = 2
 model = NeuralNetworkClassificationModel(input_dim,output_dim).to(device)
 
@@ -70,10 +82,10 @@ model = NeuralNetworkClassificationModel(input_dim,output_dim).to(device)
 learning_rate = 0.001
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate)
-num_epochs = 200
+num_epochs = 500
 
 #split dataset into batches
-batch_size = 10000
+batch_size = 100000
 batches_X_train = torch.split(X_train, batch_size)
 batches_y_train = torch.split(y_train, batch_size)
 batches_X_test = torch.split(X_test, batch_size)
@@ -160,25 +172,28 @@ def graph(results):
     fig, ax = plt.subplots()
     ax.plot(x, results[0], label="training error")
     ax.plot(x, results[1], label="testing error")
-    plt.title("Average Error")
+    plt.title("Neural Net - Average Error")
     plt.xlabel("training iteration")
     ax.grid()
     plt.legend()
-    fig.savefig("errors.png")
+    fig.savefig("nn_errors.png")
 
     #graph correct testing guesses over epochs
     fig, ax = plt.subplots()
     ax.plot(x, results[2], label="correct guess fraction")
-    plt.title("Computer Guesses on Unseen Data")
+    plt.title("Neural Net - Computer Guesses on Unseen Data")
     plt.xlabel("training iteration")
     plt.ylabel("percent")
     ax.grid()
     plt.legend()
-    fig.savefig("percent_correct.png")
+    fig.savefig("nn_percent_correct.png")
 
 
 
 results = train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_epochs)
+
 graph(results)
+
+torch.save(model.state_dict(), "nn_model.torch")
 
 print("finished in ", time.time() - start_time, " seconds")

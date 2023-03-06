@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from Bio import SeqIO
 import random
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def assemble_data(num_samples):    #add raw fastq sequences into the nodulation sequence csv
 
@@ -14,25 +16,30 @@ def assemble_data(num_samples):    #add raw fastq sequences into the nodulation 
             if (count > num_samples):
                 break
             count += 1
+            
+        print("bulk sequences num = ", len(bulk_sequences))
 
-        print(len(bulk_sequences))
-        small_bulk_sequences = random.choices(bulk_sequences, k=num_samples)
-        print("bulk sequences num = ", len(small_bulk_sequences))
-
-        data = {'genes':small_bulk_sequences, 'nod_relation':np.zeros(len(small_bulk_sequences))}
+        data = {'genes':bulk_sequences, 'nod_relation':np.zeros(len(bulk_sequences))}
 
         bulk_df = pd.DataFrame(data)
 
     #write and label nodulation specific genes into dataframe
     nod_genes = pd.read_csv("data/nodulation_genes.csv")
     nod_sequences = nod_genes['Transcript']
-
+    
+    count = 0
     small_nod_sequences = []
     for seq in nod_sequences:
-        for repeat in range(round(num_samples/len(nod_sequences))):    #randomly sample the long sequences into 300 bp segments
-            if len(str(seq)) > 300:
-                random_index = random.randrange(0, len(str(seq)) - 300)
-                small_nod_sequences.append(seq[random_index:random_index+300])
+        sequence = str(seq)
+        length = len(sequence)
+        if (length > 300):
+            for window_num in range(length - 300):
+                small_nod_sequences.append(sequence[window_num:window_num+300])
+                count += 1
+                if (count > num_samples):
+                    break
+        if (count > num_samples):
+            break
 
     print("nod sequences num = ", len(small_nod_sequences))
     data = {'genes':small_nod_sequences, 'nod_relation': np.ones(len(small_nod_sequences))}
@@ -84,19 +91,19 @@ def onehot_encode_sequences():
     print(onehot_sequences)
     print(onehot_sequences[:,0])
     
-    for num in range(400):
+    for num in range(1200):
         csv[num] = onehot_sequences[:,num]
     
-    #csv = csv.sample(frac=1)
+    csv = csv.sample(frac=1)
     csv.to_csv("data/genes_with_onehot.csv", index=False)
 
 def onehote(seq):
     seq2=list()
-    mapping = {"A":[1., 0., 0., 0.], "C": [0., 1., 0., 0.], "G": [0., 0., 1., 0.], "T":[0., 0., 0., 1.]}
+    mapping = {"A":[1., 0., 0., 0.], "a":[1., 0., 0., 0.], "T": [0., 1., 0., 0.], "t": [0., 1., 0., 0.], "C": [0., 0., 1., 0.], "c": [0., 0., 1., 0.], "G":[0., 0., 0., 1.], "g":[0., 0., 0., 1.]}
     for i in seq:
       seq2.append(mapping[i]  if i in mapping.keys() else [0., 0., 0., 0.]) 
     return np.array(seq2)
 
-assemble_data(900)
+assemble_data(1000000)
 onehot_encode_sequences()
 #float_encode_sequences()
