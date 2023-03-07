@@ -10,7 +10,7 @@ Currently utilizing neural networks and k-nearest-neighbor approaches
 - [x] Create a neural network test-train code
 - [x] Create Knn train-test code
 - [x] Graph testing results
-- [ ] Optimize hyperparameters and approached for optimum classification
+- [ ] Optimize hyperparameters for best classification
 
 ### The Data
 - *Medicago Truncatula* RNA-seq data has been pulled from [NCBI's Sequence Read Archive](https://www.ncbi.nlm.nih.gov/sra)
