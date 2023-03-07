@@ -18,9 +18,10 @@ Currently utilizing neural networks and k-nearest-neighbor approaches
 
 ### Output Graphs
 
-![nn_percent_correct (1)](https://user-images.githubusercontent.com/88045526/223278367-dd9dab91-bc2e-4299-9ac0-2409eeead7fc.png)
 
-![nn_errors](https://user-images.githubusercontent.com/88045526/223278379-6a74458c-a984-4005-ac0b-f6698d3046b2.png)
+![nn_percent_correct](https://user-images.githubusercontent.com/88045526/223479343-bfc8de4a-84d9-4d60-8ed1-83460cd12854.png)
+
+![nn_errors](https://user-images.githubusercontent.com/88045526/223479576-787a505b-cb1f-478c-a950-33be89776c92.png)
 
 ![knn_percent (1)](https://user-images.githubusercontent.com/88045526/223278443-f4fb4d39-4a51-4919-9af0-1714d16a5a63.png)
 
