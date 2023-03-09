@@ -16,7 +16,7 @@ Currently utilizing neural networks and k-nearest-neighbor approaches
 - *Medicago Truncatula* RNA-seq data has been pulled from [NCBI's Sequence Read Archive](https://www.ncbi.nlm.nih.gov/sra)
 - Gene sequences that have been experimentally validated to influence nodulation were supplied from [this review of nitrogen-fixation research](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6961631/)
 
-### Output Graphs
+### Model Accuracy
 
 
 ![nn_percent_correct](https://user-images.githubusercontent.com/88045526/223479343-bfc8de4a-84d9-4d60-8ed1-83460cd12854.png)
