@@ -11,6 +11,7 @@ Currently utilizing neural networks and k-nearest-neighbor approaches
 - [x] Create Knn train-test code
 - [x] Graph testing results
 - [ ] Optimize hyperparameters for best classification
+- [x] Apply model to discover new genes
 
 ### The Data
 - *Medicago Truncatula* RNA-seq data has been pulled from [NCBI's Sequence Read Archive](https://www.ncbi.nlm.nih.gov/sra)
@@ -25,10 +26,18 @@ Currently utilizing neural networks and k-nearest-neighbor approaches
 
 ![knn_percent (1)](https://user-images.githubusercontent.com/88045526/223278443-f4fb4d39-4a51-4919-9af0-1714d16a5a63.png)
 
+### Model Application
+
+After training the model, I apply it to the *Medicago Truncatula* genome
+
+![nod_distribution](https://user-images.githubusercontent.com/88045526/224168154-6e34dc87-88f0-4833-aeb8-021a03d84dac.png)
+
 ## References
 These technical blog posts really helped this project come along:
 
 [Simple PyTorch Neural Network using the iris dataset](https://www.kaggle.com/code/mohitchaitanya/simple-iris-dataset-classification-using-pytorch)
 
 [One-hot DNA encoding](https://elferachid.medium.com/one-hot-encoding-dna-92a1c29ba15a)
+
+[Low-pass Filter](https://medium.com/analytics-vidhya/how-to-filter-noise-with-a-low-pass-filter-python-885223e5e9b7)
 
