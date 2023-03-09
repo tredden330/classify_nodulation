@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 from Bio import SeqIO
 import random
-import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def assemble_data(num_samples):    #add raw fastq sequences into the nodulation sequence csv
 
@@ -46,12 +44,15 @@ def assemble_data(num_samples):    #add raw fastq sequences into the nodulation 
 
     small_nod_sequences = pd.DataFrame(data)
 
-    #concatenate data together and save as csv
+    #concatenate data together, remove duplicates, and save as csv
     df = pd.concat([bulk_df, small_nod_sequences])
+    hard_duplicates = df.duplicated(keep="first")
+    df = df[hard_duplicates.values]
+    print("removed ", hard_duplicates.sum(), " duplicates")
     df.to_csv("data/genes.csv",index=False)
 
 
-def float_encode_sequences():    #to input into neural network, sequences must be encoded as floats
+def float_encode_sequences():    #encode gene sequences as floats
 
     csv = pd.read_csv("data/genes.csv")
 
@@ -80,7 +81,7 @@ def float_encode_sequences():    #to input into neural network, sequences must b
     csv = csv.sample(frac=1)
     csv.to_csv("data/genes_with_float_million.csv", index=False)
 
-def onehot_encode_sequences():
+def onehot_encode_sequences():      #encode gene sequences one-hot
 
     csv = pd.read_csv("data/genes.csv")
     onehot_sequences = []
@@ -88,8 +89,6 @@ def onehot_encode_sequences():
         onehot_sequences.append(onehote(gene_seq))
     onehot_sequences = np.array(onehot_sequences)
     onehot_sequences = onehot_sequences.reshape(len(onehot_sequences), 1200)
-    print(onehot_sequences)
-    print(onehot_sequences[:,0])
     
     for num in range(1200):
         csv[num] = onehot_sequences[:,num]
@@ -104,6 +103,14 @@ def onehote(seq):
       seq2.append(mapping[i]  if i in mapping.keys() else [0., 0., 0., 0.]) 
     return np.array(seq2)
 
-assemble_data(1000000)
-onehot_encode_sequences()
-#float_encode_sequences()
+def window(string, size):
+    windows = []
+    if len(string) > size:
+        for index in range(len(string) - size):
+            windows.append(string[index:index+size])
+    return windows
+
+if __name__ == "__main__":
+    assemble_data(1647927)
+    onehot_encode_sequences()
+    #float_encode_sequences()

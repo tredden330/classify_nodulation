@@ -17,9 +17,31 @@ class NeuralNetworkClassificationModel(nn.Module):
 
         #define shape of network
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(input_dim, 20),
+            nn.Linear(input_dim, 10),
             nn.ReLU(),
-            nn.Linear(20,10),
+#            nn.Linear(50,10),
+#            nn.ReLU(),
+            nn.Linear(10,3),
+            nn.ReLU(),
+            nn.Linear(3,output_dim),
+         )
+
+    def forward(self,x):
+
+        logits = self.linear_relu_stack(x)
+        return logits
+    
+class AppliedNeuralNetworkClassificationModel(nn.Module):
+
+    def __init__(self,input_dim,output_dim):
+
+        super(AppliedNeuralNetworkClassificationModel,self).__init__()
+
+        #define shape of network
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(input_dim, 50),
+            nn.ReLU(),
+            nn.Linear(50,10),
             nn.ReLU(),
             nn.Linear(10,5),
             nn.ReLU(),
@@ -44,7 +66,7 @@ isOneHotEncoded = True
 isFloatEncoded = False
 
 if (isOneHotEncoded):
-    df1 = pd.read_csv('data/genes_with_onehot.csv', on_bad_lines='skip', nrows=100000)
+    df1 = pd.read_csv('data/genes_with_onehot.csv', on_bad_lines='skip')
 #    df1 = df1.sample(frac=.01)
     keys = map(str, range(1200))
     X = df1[keys].values
@@ -85,7 +107,7 @@ optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate)
 num_epochs = 500
 
 #split dataset into batches
-batch_size = 100000
+batch_size = 200000
 batches_X_train = torch.split(X_train, batch_size)
 batches_y_train = torch.split(y_train, batch_size)
 batches_X_test = torch.split(X_test, batch_size)
@@ -176,7 +198,7 @@ def graph(results):
     plt.xlabel("training iteration")
     ax.grid()
     plt.legend()
-    fig.savefig("nn_errors.png")
+    fig.savefig("graphs/nn_errors.png")
 
     #graph correct testing guesses over epochs
     fig, ax = plt.subplots()
@@ -186,14 +208,14 @@ def graph(results):
     plt.ylabel("percent")
     ax.grid()
     plt.legend()
-    fig.savefig("nn_percent_correct.png")
+    fig.savefig("graphs/nn_percent_correct.png")
 
 
+if __name__ == "__main__":
+    results = train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_epochs)
 
-results = train_network(model,optimizer,criterion,X_train,y_train,X_test,y_test,num_epochs)
+    graph(results)
 
-graph(results)
+    torch.save(model.state_dict(), "models/nn_model_" + str(results[2][num_epochs-1]) + ".pt")
 
-torch.save(model.state_dict(), "nn_model.torch")
-
-print("finished in ", time.time() - start_time, " seconds")
+    print("finished in ", time.time() - start_time, " seconds")

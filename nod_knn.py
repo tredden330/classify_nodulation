@@ -7,12 +7,13 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+import pickle
 
 #track program runtime
 start_time = time.time()
 
-df1 = pd.read_csv('data/genes_with_onehot.csv', on_bad_lines='skip', nrows=100000)
-
+#load data
+df1 = pd.read_csv('data/genes_with_onehot.csv', on_bad_lines='skip')
 keys = map(str, range(1200))
 X = df1[keys]
 y = df1['nod_relation'].astype(int).values
@@ -35,13 +36,14 @@ for num in k_range:
     print(num_correct)
     print(num_correct/len(X_test))
     results.append(num_correct/len(X_test))
-    
+
+#plot k values
 fig, ax = plt.subplots()
 ax.plot(k_range, results)
 plt.title("Knn - correct guessing")
 plt.xlabel("k-value")
 plt.ylabel("percent correct")
 ax.grid()
-fig.savefig("knn_percent.png")
+fig.savefig("graphs/knn_percent.png")
 
 print("finished in ", time.time() - start_time, " seconds")
