@@ -32,6 +32,8 @@ After training the model, I apply it to the *Medicago Truncatula* genome
 
 ![nod_distribution](https://user-images.githubusercontent.com/88045526/224168154-6e34dc87-88f0-4833-aeb8-021a03d84dac.png)
 
+![nod_distribution (1)](https://user-images.githubusercontent.com/88045526/224172599-8dc016ab-d0e7-4e47-9b3f-1b5db417108c.png)
+
 ## References
 These technical blog posts really helped this project come along:
 
